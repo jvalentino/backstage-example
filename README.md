@@ -44,7 +44,25 @@ I generally leave the test watcher on using `yarn test`, noting that getting my 
 }
 ```
 
+## (3) Configure the Source Code Provider
 
+In the case of Git:
+
+Create your Personal Access Token by opening [the GitHub token creation page](https://github.com/settings/tokens/new). Use a name to identify this token and put it in the notes field. Choose a number of days for expiration. If you have a hard time picking a number, we suggest to go for 7 days, it's a lucky number.
+
+![Screenshot of the GitHub Personal Access Token creation page](https://backstage.io/assets/images/gh-pat-b09e0abf61ff86557a8a986951584879.png)
+
+*Note: For mine I picked "No Expiration" so I don't have to generate a new token every 7 days.*
+
+I then put the token in ~/.zshrc for later usage in the config:
+
+```bash
+export BACKSTAGE_EXAMPLE_GIT_TOKEN=my token
+```
+
+This environment variable is then used in the configuration file.
+
+## (?) Run The App
 
 To start the app, run:
 
@@ -323,5 +341,91 @@ export const Root = ({ children }: PropsWithChildren<{}>) => (
 
 That's it! You should now have *(although slightly boring)* a homepage!
 
+## (5) Avoid the "When using Node.js version 20 or newer" error
 
+When trying to create a new component using the default configuration, you will get this error:
+
+```
+When using Node.js version 20 or newer, the scaffolder backend plugin requires that it be started with the --no-node-snapshot option. 
+        Please make sure that you have NODE_OPTIONS=--no-node-snapshot in your environment.
+```
+
+To avoid this, you need to change you startup the application in package.json:
+
+```json
+...
+ "scripts": {
+    "dev": "concurrently \"NODE_OPTIONS='--no-node-snapshot' yarn start\" \"NODE_OPTIONS='--no-node-snapshot' yarn start-backend\"",
+   ...
+```
+
+
+
+## (6) Avoid the "No token available for host: github.com" error
+
+```
+No token available for host: github.com, with owner jvalentino, and repo example-backstage-node-component
+```
+
+I guess this is what happens when you don't do this step that is a part of the auth setup: https://backstage.io/docs/getting-started/config/authentication#setting-up-a-github-integration
+
+Create your Personal Access Token by opening [the GitHub token creation page](https://github.com/settings/tokens/new). Use a name to identify this token and put it in the notes field. Choose a number of days for expiration. If you have a hard time picking a number, we suggest to go for 7 days, it's a lucky number.
+
+![Screenshot of the GitHub Personal Access Token creation page](https://backstage.io/assets/images/gh-pat-b09e0abf61ff86557a8a986951584879.png)
+
+*Note: For mine I picked "No Expiration" so I don't have to generate a new token every 7 days.*
+
+I then put the token in ~/.zshrc for later usage in the config:
+
+```bash
+exeport BACKSTAGE_EXAMPLE_GIT_TOKEN=my token
+```
+
+Set the scope to your likings. For this tutorial, selecting `repo` and `workflow` is required as the scaffolding job in this guide configures a GitHub actions workflow for the newly created project.
+
+For this tutorial, we will be writing the token to `app-config.local.yaml`. This file might not exist for you, so if it doesn't go ahead and create it alongside the `app-config.yaml` at the root of the project. This file should also be excluded in `.gitignore`, to avoid accidental committing of this file.
+
+In your `app-config.yaml` go ahead and add the following:
+
+```yaml
+integrations:
+  github:
+    - host: github.com
+      # This is a Personal Access Token or PAT from GitHub. You can find out how to generate this token, and more information
+      # about setting up the GitHub integration here: https://backstage.io/docs/getting-started/configuration#setting-up-a-github-integration
+      token: ${BACKSTAGE_EXAMPLE_GIT_TOKEN}
+```
+
+
+
+# How does creating a new component work?
+
+![component-01](./wiki/component-01.png)
+
+![component-01](./wiki/component-02.png)
+
+![component-01](./wiki/component-03.png)
+
+![component-01](./wiki/component-04.png)
+
+![component-01](./wiki/component-05.png)
+
+![component-01](./wiki/component-06.png)
+
+![component-01](./wiki/component-07.png)
+
+catalog-info.yaml
+
+```yaml
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: "example-backstage-node-component"
+spec:
+  type: service
+  owner: user:guest
+  lifecycle: experimental
+```
+
+This is the metadata file used for controlling the various settings on the component's page.
 
