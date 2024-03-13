@@ -29,6 +29,11 @@ When you run the app, you will see this:
 
 ## (2) Make sure the tests work
 
+```bash
+yarn install
+yarn test
+```
+
 I generally leave the test watcher on using `yarn test`, noting that getting my current version of VS Code + Jest to successfully work was a pain that I gave up on. As such I added settings to have them not run on save, which you should comment out if you got this to work:
 
 .vscode/settings.json
@@ -52,21 +57,23 @@ yarn dev
 
 # How this project was created
 
-You need to have a specific version of node installed for the setup to work so be prepared to 
 
-## (1) Install NVM
+
+## (1) Generate a template
+
+You need to have a specific version of node installed for the setup to work so be prepared to 
 
 ```shell
 brew install nvm
 ```
 
-## (2) Install the appropriate version of Node you need
+ Install the appropriate version of Node you need
 
 ```bash
 nvm install 20
 ```
 
-## (3) So that you can create the new template application:
+...So that you can create the new template application:
 
 ```bash
 npx @backstage/create-app@latest
@@ -74,7 +81,7 @@ npx @backstage/create-app@latest
 
 ...where you will be prompted to give it an application name that will result in that directory being created.
 
-## (4) Database Setup (Local)
+## (2) Database Setup (Local)
 
  However, backstage requires a database for data storage, so from a local perspective a Postgres database container was created using docker compose:
 
@@ -132,7 +139,7 @@ You then validate that this works using `yarn dev`, and then validating using a 
 
 
 
-## (5) Authentication (Github as an Example)
+## (3) Authentication (Github as an Example)
 
 Reference: https://backstage.io/docs/getting-started/config/authentication
 
@@ -203,4 +210,118 @@ You will now see this:
 ![sign-in](./wiki/sign-in.png)
 
 ![authorize-app](./wiki/authorize-app.png)
+
+## (4) Setup a Home Page
+
+Reference: https://backstage.io/docs/getting-started/homepage
+
+1. Install the plugin[](https://backstage.io/docs/getting-started/homepage#1-install-the-plugin)
+
+```bash
+# From your Backstage root directory
+yarn --cwd packages/app add @backstage/plugin-home
+```
+
+
+
+2. Create a new HomePage component[](https://backstage.io/docs/getting-started/homepage#2-create-a-new-homepage-component)
+
+Inside your `packages/app` directory, create a new file where our new homepage component is going to live. Create `packages/app/src/components/home/HomePage.tsx` with the following initial code
+
+```tsx
+import React from 'react';
+
+export const HomePage = () => (
+  /* We will shortly compose a pretty homepage here. */
+  <h1>Welcome to Backstage!</h1>
+);
+```
+
+
+
+3. Update router for the root `/` route[](https://backstage.io/docs/getting-started/homepage#3-update-router-for-the-root--route)
+
+If you don't have a homepage already, most likely you have a redirect setup to use the Catalog homepage as a homepage.
+
+Inside your `packages/app/src/App.tsx`, look for
+
+packages/app/src/App.tsx
+
+```tsx
+const routes = (
+  <FlatRoutes>
+    <Navigate key="/" to="catalog" />
+    {/* ... */}
+  </FlatRoutes>
+);
+```
+
+
+
+Let's replace the `<Navigate>` line and use the new component we created in the previous step as the new homepage.
+
+packages/app/src/App.tsx
+
+```tsx
+import { HomepageCompositionRoot } from '@backstage/plugin-home';
+import { HomePage } from './components/home/HomePage';
+
+const routes = (
+  <FlatRoutes>
+    <Navigate key="/" to="catalog" />
+    <Route path="/" element={<HomepageCompositionRoot />}>
+      <HomePage />
+    </Route>
+    {/* ... */}
+  </FlatRoutes>
+);
+```
+
+
+
+4. Update sidebar items[](https://backstage.io/docs/getting-started/homepage#4-update-sidebar-items)
+
+Let's update the route for "Home" in the Backstage sidebar to point to the new homepage. We'll also add a Sidebar item to quickly open Catalog.
+
+| Before                                                       | After                                                        |
+| ------------------------------------------------------------ | ------------------------------------------------------------ |
+| ![Sidebar without Catalog](https://backstage.io/assets/images/sidebar-without-catalog-e7737bc9f306437332595c57606fc644.png) | ![Sidebar with Catalog](https://backstage.io/assets/images/sidebar-with-catalog-f94e950f2ea3627ecaab41aabbe167b6.png) |
+
+The code for the Backstage sidebar is most likely inside your [`packages/app/src/components/Root/Root.tsx`](https://github.com/backstage/backstage/blob/master/packages/app/src/components/Root/Root.tsx).
+
+Let's make the following changes
+
+packages/app/src/components/Root/Root.tsx
+
+```tsx
+import CategoryIcon from '@material-ui/icons/Category';
+
+export const Root = ({ children }: PropsWithChildren<{}>) => (
+  <SidebarPage>
+    <Sidebar>
+      <SidebarLogo />
+      {/* ... */}
+      <SidebarGroup label="Menu" icon={<MenuIcon />}>
+        {/* Global nav, not org-specific */}
+        <SidebarItem icon={HomeIcon} to="catalog" text="Home" />
+        <SidebarItem icon={HomeIcon} to="/" text="Home" />
+        <SidebarItem icon={CategoryIcon} to="catalog" text="Catalog" />
+        <SidebarItem icon={ExtensionIcon} to="api-docs" text="APIs" />
+        <SidebarItem icon={LibraryBooks} to="docs" text="Docs" />
+        <SidebarItem icon={LayersIcon} to="explore" text="Explore" />
+        <SidebarItem icon={CreateComponentIcon} to="create" text="Create..." />
+        {/* End global nav */}
+        <SidebarDivider />
+        {/* ... */}
+      </SidebarGroup>
+    </Sidebar>
+  </SidebarPage>
+);
+```
+
+
+
+That's it! You should now have *(although slightly boring)* a homepage!
+
+
 
