@@ -67,11 +67,16 @@ This environment variable is then used in the configuration file.
 To start the app, run:
 
 ```sh
+docker-compose up -d
 yarn install
 yarn dev
 ```
 
+Note that the first command launches a branch new Postgres database that will maintain all future data on your local machine.
 
+The second command installs the dependencies.
+
+The third command launches the app.
 
 # How this project was created
 
@@ -398,7 +403,9 @@ integrations:
 
 
 
-# How does creating a new component work?
+# FAQ
+
+## How does creating a new component work?
 
 ![component-01](./wiki/component-01.png)
 
@@ -429,3 +436,18 @@ spec:
 
 This is the metadata file used for controlling the various settings on the component's page.
 
+## How does adding an existing component after the fact work?
+
+Based on https://backstage.io/docs/features/software-catalog/#manually-register-components
+
+This works by provide the location of the metadata configuration file, for example: https://github.com/backstage/backstage/blob/master/packages/catalog-model/examples/components/artist-lookup-component.yaml
+
+![component-01](./wiki/after-comp-01.png)
+
+![component-01](./wiki/after-comp-02.png)
+
+![component-01](./wiki/after-comp-03.png)
+
+![component-01](./wiki/after-comp-04.png)
+
+![component-01](./wiki/after-comp-05.png)
