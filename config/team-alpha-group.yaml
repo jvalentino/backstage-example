@@ -1,0 +1,23 @@
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: team-alpha
+  description: Team Alpha
+spec:
+  type: team
+  profile:
+    # Intentional no displayName for testing
+    email: team-alpha@example.com
+    picture: https://api.dicebear.com/7.x/identicon/svg?seed=Fluffy&backgroundType=solid,gradientLinear&backgroundColor=ffd5dc,b6e3f4
+  parent: company-my
+  children: []
+---
+apiVersion: backstage.io/v1alpha1
+kind: User
+metadata:
+  name: jvalentino
+spec:
+  profile:
+    displayName: John Valentino
+    email: some-address@gmail.com
+  memberOf: [team-alpha]

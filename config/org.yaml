@@ -1,0 +1,27 @@
+---
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: company-my
+  description: My Company
+  links:
+    - url: http://www.acme.com/
+      title: Website
+    - url: https://meta.wikimedia.org/wiki/
+      title: Intranet
+spec:
+  type: organization
+  profile:
+    displayName: My Company
+    email: info@example.com
+    picture: https://api.dicebear.com/7.x/identicon/svg?seed=Maggie&flip=true&backgroundColor=ffdfbf
+  children: [team-alpha]
+---
+apiVersion: backstage.io/v1alpha1
+kind: Location
+metadata:
+  name: group-company-my
+  description: A collection of all Backstage example Groups
+spec:
+  targets:
+    - ./team-alpha-group.yaml
