@@ -401,6 +401,169 @@ integrations:
       token: ${BACKSTAGE_EXAMPLE_GIT_TOKEN}
 ```
 
+## (7) Creating Orgs, Teams, and User Assignments 
+
+This one stumped me for quite a while, as it was buried in a combination of code and documentation.
+
+In this example, I created:
+
+- The Company of "My Company", which contains
+- The Team of "Team Alpha", which contains
+- The User of "jvalentino", which is mapped to 
+- My actual Git Account of jvalentino, which happens by modifying the auth provider on the backend
+
+**app-config.yaml**
+
+```yaml
+catalog:
+  import:
+    entityFilename: catalog-info.yaml
+    pullRequestBranchName: backstage-integration
+  rules:
+    - allow: [Component, System, API, Resource, Location]
+  locations:
+    # leaves the existing locations in place`
+
+    - type: file
+      target: ../../config/org.yaml
+      rules:
+        - allow: [User, Group]
+```
+
+This is placing the org config in its own file.
+
+**./config/org.yaml**
+
+```yaml
+---
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: company-my
+  description: My Company
+  links:
+    - url: http://www.acme.com/
+      title: Website
+    - url: https://meta.wikimedia.org/wiki/
+      title: Intranet
+spec:
+  type: organization
+  profile:
+    displayName: My Company
+    email: info@example.com
+    picture: https://api.dicebear.com/7.x/identicon/svg?seed=Maggie&flip=true&backgroundColor=ffdfbf
+  children: [team-alpha]
+---
+apiVersion: backstage.io/v1alpha1
+kind: Location
+metadata:
+  name: group-company-my
+  description: A collection of all Backstage example Groups
+spec:
+  targets:
+    - ./team-alpha-group.yaml
+```
+
+This creates the Company and then puts Team Alpha under it.
+
+**./config/team-alpha-group.yaml**
+
+```yaml
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: team-alpha
+  description: Team Alpha
+spec:
+  type: team
+  profile:
+    # Intentional no displayName for testing
+    email: team-alpha@example.com
+    picture: https://api.dicebear.com/7.x/identicon/svg?seed=Fluffy&backgroundType=solid,gradientLinear&backgroundColor=ffd5dc,b6e3f4
+  parent: company-my
+  children: []
+---
+apiVersion: backstage.io/v1alpha1
+kind: User
+metadata:
+  name: jvalentino
+spec:
+  profile:
+    displayName: John Valentino
+    email: 1@foo.com
+  memberOf: [team-alpha]
+
+```
+
+This creates Team Alpha, and then creates the user of "jvalentino".
+
+This will automatically map to the GitHub username, but only if you make the next auth change.
+
+**./packages/backend/src/plugins/auth.ts**
+
+```typescript
+import {
+  createRouter,
+  providers,
+  defaultAuthProviderFactories,
+} from '@backstage/plugin-auth-backend';
+import { Router } from 'express';
+import { PluginEnvironment } from '../types';
+
+export default async function createPlugin(
+  env: PluginEnvironment,
+): Promise<Router> {
+  return await createRouter({
+    logger: env.logger,
+    config: env.config,
+    database: env.database,
+    discovery: env.discovery,
+    tokenManager: env.tokenManager,
+    providerFactories: {
+      ...defaultAuthProviderFactories,
+
+      // This replaces the default GitHub auth provider with a customized one.
+      // The `signIn` option enables sign-in for this provider, using the
+      // identity resolution logic that's provided in the `resolver` callback.
+      //
+      // This particular resolver makes all users share a single "guest" identity.
+      // It should only be used for testing and trying out Backstage.
+      //
+      // If you want to use a production ready resolver you can switch to
+      // the one that is commented out below, it looks up a user entity in the
+      // catalog using the GitHub username of the authenticated user.
+      // That resolver requires you to have user entities populated in the catalog,
+      // for example using https://backstage.io/docs/integrations/github/org
+      //
+      // There are other resolvers to choose from, and you can also create
+      // your own, see the auth documentation for more details:
+      //
+      //   https://backstage.io/docs/auth/identity-resolver
+      github: providers.github.create({
+        signIn: {
+         /* resolver(_, ctx) {
+            const userRef = 'user:default/guest'; // Must be a full entity reference
+            return ctx.issueToken({
+              claims: {
+                sub: userRef, // The user's own identity
+                ent: [userRef], // A list of identities that the user claims ownership through
+              },
+            });
+          },*/
+          resolver: providers.github.resolvers.usernameMatchingUserEntityName(),
+        },
+      }),
+    },
+  });
+}
+```
+
+You comment out the current resolver, and replace it with the call of the existing resolver for GitHub. You would need to do this for whatever the auth mechanism is.
+
+You have to logout and log back in, but then it will look like this on your settings:
+
+![auth-settings](./wiki/auth-settings.png)
+
 
 
 # FAQ

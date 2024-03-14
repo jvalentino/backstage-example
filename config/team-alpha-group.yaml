@@ -19,5 +19,5 @@ metadata:
 spec:
   profile:
     displayName: John Valentino
-    email: some-address@gmail.com
+    email: 1@foo.com
   memberOf: [team-alpha]
