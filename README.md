@@ -366,7 +366,7 @@ To avoid this, you need to change you startup the application in package.json:
 
 
 
-## (6) Avoid the "No token available for host: github.com" error
+## (6) Github/SCM auth to create new repos
 
 ```
 No token available for host: github.com, with owner jvalentino, and repo example-backstage-node-component
