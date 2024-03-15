@@ -1,5 +1,22 @@
 # [Backstage](https://backstage.io)
 
+- [Backstage](#backstage)
+- [Developer Setup](#developer-setup)
+  * [(1) Configure the Auth provider](#1-configure-the-auth-provider)
+  * [(2) Make sure the tests work](#2-make-sure-the-tests-work)
+  * [(3) Configure the Source Code Provider](#3-configure-the-source-code-provider)
+  * [(?) Run The App](#-run-the-app)
+- [How this project was created](#how-this-project-was-created)
+  * [(1) Generate a template](#1-generate-a-template)
+  * [(2) Database Setup (Local)](#2-database-setup-local)
+  * [(3) Authentication (Github as an Example)](#3-authentication-github-as-an-example)
+  * [(4) Setup a Home Page](#4-setup-a-home-page)
+  * [(5) Avoid the "When using Node.js version 20 or newer" error](#5-avoid-the-when-using-nodejs-version-20-or-newer-error)
+  * [(6) Github/SCM auth to create new repos](#6-githubscm-auth-to-create-new-repos)
+  * [(7) Creating Orgs, Teams, and User Assignments](#7-creating-orgs-teams-and-user-assignments)
+- [FAQ](#faq)
+  * [How does creating a new component work?](#how-does-creating-a-new-component-work)
+  * [How does adding an existing component after the fact work?](#how-does-adding-an-existing-component-after-the-fact-work)
 
 
 # Developer Setup
